@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+    <title>Document</title>
+</head>
+<body>
+
+    <input type="text"  id="input" autofocus>
+    <button id="button">Send</button>
+    <div id="messages"></div>
+    <div id="connectStatus"></div>
+    <div id="disconnectStatus"></div>
+
+
+    <!-- <script src="index.js"></script> -->
+    <script>
+        const socket = io('localhost:5555'),
+              messageBlock = document.querySelector('#messages'),
+              sendButton = document.querySelector('#button'),
+              disconnectStatus  = document.querySelector('#disconnectStatus'),
+              connectStatus = document.querySelector('#connectStatus'),
+              input = document.querySelector('#input');
+
+
+      let  users =  ['Kate', 'Leo','Max', 'Ivan', 'Ann', 'Vasya'];
+
+      let randomName = Math.floor(Math.random() * users.length);
+    
+
+        
+      sendButton.addEventListener('click', ()=>{
+          const data = {
+            message : input.value,
+            name: users[randomName],
+          };
+
+          socket.emit('client-msg', data);
+          input.value = '';
+      });
+
+        socket.on('connect', () => {
+            connectStatus.append(`${users[randomName]} has connected`);
+            setTimeout(() => {
+                connectStatus.remove();
+            }, 2000) ;
+            console.log(`connected`);
+        });
+
+        socket.on('reconnect', () => {
+        console.log('reconnect!');
+        });
+
+        socket.on('disconnecting', () => {
+            console.log('disconnecting');
+        });
+
+        socket.on('disconnect', () => {
+            disconnectStatus.append(`${users[randomName]} has disconnect`);
+            console.log(`disconected`);
+        });
+
+  
+        socket.on('server-msg', payload => {
+            console.log(payload);
+
+
+            messageBlock.insertAdjacentHTML('beforeend',`<div>${payload.user}: ${payload.message}</div>`);
+        })
+    </script>
+</body>
+</html>
